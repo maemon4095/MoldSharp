@@ -1,0 +1,18 @@
+﻿<#@ template language="C#" linePragmas="false" debug="false" hostspecific="false" visibility="internal" #>
+<#@ assembly name="System.Core" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System"#>
+
+namespace MoldSharp
+{
+	[global::System.AttributeUsage(global::System.AttributeTargets.Class | global::System.AttributeTargets.Struct)]
+	sealed class MoldAttribute : global::System.Attribute
+	{
+		public string TemplatePath { get; }
+
+		public MoldAttribute(string path)
+		{
+			this.TemplatePath = path;
+		}
+	}
+}

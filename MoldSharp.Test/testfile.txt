@@ -1,0 +1,7 @@
+﻿/@ import System.Text
+/# foreach(var chara in "/#") {
+/$ chara $/
+/# }
+
+/: foreach(var item in "/::/") { :/  /$ $"{item}$/" $/  /: } ://::/
+/# var builder = new StringBuilder();
