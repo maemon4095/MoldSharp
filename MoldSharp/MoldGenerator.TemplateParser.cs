@@ -48,7 +48,6 @@ public sealed partial class MoldGenerator
             this.prevState = State.Initial;
             this.TypeIdentifier = typeIdentifier;
             this.FullNamespace = fullNamespace;
-            this.directiveParser = new();
             var transformTextWriter = this.transformTextWriter = new IndentedWriter(rootWriter.IndentString);
 
 
@@ -68,7 +67,6 @@ public sealed partial class MoldGenerator
         readonly string TypeIdentifier;
         readonly string? FullNamespace;
         State state, prevState;
-        DirectiveParser directiveParser;
 
         public void Parse(ReadOnlySpan<char> span)
         {

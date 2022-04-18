@@ -2,7 +2,7 @@
 using StaticStateMachine;
 namespace MoldSharp;
 
-static class UnrolledSequenceExtension
+static partial class UnrolledSequenceExtension
 {
     public static bool StartsWith(this UnrolledSequence<char> sequence, string str, StringComparison comparison)
     {

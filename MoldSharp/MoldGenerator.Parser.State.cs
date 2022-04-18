@@ -1,4 +1,7 @@
-﻿namespace MoldSharp;
+﻿using C4N.Collections.Sequence;
+using System.Collections;
+
+namespace MoldSharp;
 
 public sealed partial class MoldGenerator
 {
@@ -27,29 +30,60 @@ public sealed partial class MoldGenerator
         static State Initial(Context context)
         {
             var result = context.Source.Read(2);
-            var buffer = result.Buffer;
-            var tokenizer = new InitialTokenizer();
-            var (state, _) = buffer.StartsWith<InitialTokenizer, char, Token>(tokenizer);
-
-            if (!state.Accept) return State.PlainText;
-
-            context.Source.Advance(2);
-            return state.Associated switch
-            {
-                Token.BlockScriptOpen => State.BlockScript,
-                Token.LineScriptOpen => State.LineScript,
-                Token.ExpressionOpen => State.Expression,
-                Token.DirectiveOpen => State.Directive,
-                _ => default,
-            };
         }
 
         static State PlainText(Context context)
         {
             context.TransformText["__context.AppendLiteral(\""].End();
-            var result = context.Source.Read(2);
-            var buffer = result.Buffer;
             var next = State.Initial;
+            var tokenizer = new PlainTextTokenizer();
+
+            do
+            {
+                var result = context.Source.Read(2);
+                var buffer = result.Buffer;
+                var count = 0;
+                var escape = false;
+                var readPosition = buffer.Tail;
+
+                foreach (var segment in buffer.EnumerateSegment())
+                {
+                    foreach (var chara in segment.Span)
+                    {
+                        count++;
+                        if (escape)
+                        {
+                            escape = false;
+                            continue;
+                        }
+                        if (tokenizer.Transition(chara)) continue;
+                        var state = tokenizer.State;
+                        tokenizer.Reset();
+
+                        if (!state.Accept) continue;
+
+                        switch (state.Associated)
+                        {
+                            case Token.BlockScriptOpen:
+                                next = State.BlockScript;
+
+                                goto END_PlainText;
+                            case Token.LineScriptOpen:
+                                break;
+                            case Token.ExpressionOpen:
+                                break;
+                            case Token.DirectiveOpen:
+                                break;
+                            case Token.Escape:
+                                break;
+                        }
+                    }
+                }
+                context.Source.Advance(readPosition);
+            }
+            while (true);
+
+            END_PlainText:
 
             context.TransformText["\");"].Line();
             return next;
