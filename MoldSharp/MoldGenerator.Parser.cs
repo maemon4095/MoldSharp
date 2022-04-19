@@ -12,13 +12,13 @@ public sealed partial class MoldGenerator
         public GenerationOptions()
         {
             this.ContextVariable = "context";
-            this.ExternalContext = null;
+            this.ExternalContext = false;
             this.ContextSource = "this";
             this.ExportMethod = "ToString";
         }
 
         public string ContextVariable { get; set; }
-        public string? ExternalContext { get; set; }
+        public bool? ExternalContext { get; set; }
         public string? ContextSource { get; set; }
         public string ExportMethod { get; set; }
     }
@@ -61,21 +61,7 @@ public sealed partial class MoldGenerator
         }
 
 
-        static string? Escape(char chara) => chara switch
-        {
-            '\'' => @"\'",
-            '\"' => @"\""",
-            '\\' => @"\\",
-            '\0' => @"\0",
-            '\a' => @"\a",
-            '\b' => @"\b",
-            '\f' => @"\f",
-            '\n' => @"\n",
-            '\r' => @"\r",
-            '\t' => @"\t",
-            '\v' => @"\v",
-            _ => null,
-        };
+        static string? Escape(char chara) => SyntaxFactory.Literal(chara).ToString();
 
         readonly string TypeDecl;
         readonly string? FullNamespace;
@@ -104,12 +90,12 @@ public sealed partial class MoldGenerator
 
             context.TransformText["public string TransformText()"].Line()
                                  ['{'].Line().Indent(1);
-            context.TransformText["var __context = this.GetTransformContext();"].Line();
+            context.TransformText["var "][context.ContextVariable][" = this.GetTransformContext();"].Line();
 
             WriteTransformBody(context);
 
             context.TransformText.Line()
-                                 ["return "]["__context.ToString();"].Line().Indent(-1)
+                                 ["return "][context.ContextVariable]['.'][context.ExportMethod]["();"].Line().Indent(-1)
                                  ['}'].Line();
 
             context.Root[context.TransformText].End();
