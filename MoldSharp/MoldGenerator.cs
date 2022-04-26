@@ -11,11 +11,6 @@ namespace MoldSharp;
 [Generator]
 public sealed partial class MoldGenerator : IncrementalSourceGeneratorBase<TypeDeclarationSyntax>
 {
-    static SymbolDisplayFormat FormatTypeDecl { get; } = new SymbolDisplayFormat(
-        kindOptions: SymbolDisplayKindOptions.IncludeTypeKeyword,
-        genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters | SymbolDisplayGenericsOptions.IncludeVariance);
-    static SymbolDisplayFormat FormatFileName { get; } = new SymbolDisplayFormat(typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
-
     const string Namespace = nameof(MoldSharp);
     const string AttributeName = "MoldAttribute";
     const string AttributeFullName = $"{Namespace}.{AttributeName}";
@@ -48,8 +43,8 @@ public sealed partial class MoldGenerator : IncrementalSourceGeneratorBase<TypeD
         var writer = new IndentedWriter("    ");
         using var source = new TextSequenceSource(new StreamReader(new FileStream(filePath, FileMode.Open), Encoding.UTF8));
 
-        var parser = new TemplateParser(writer, 
-            symbol.ToDisplayString(FormatTypeDecl), 
+        var parser = new TemplateParser(writer,
+            symbol.ToDisplayString(Format.TypeDecl),
             symbol.ContainingNamespace.IsGlobalNamespace ? null : symbol.ContainingNamespace.ToDisplayString());
         do
         {
@@ -68,6 +63,6 @@ public sealed partial class MoldGenerator : IncrementalSourceGeneratorBase<TypeD
         }
         while (true);
 
-        return ($"{symbol.ToDisplayString(FormatFileName)}.g.cs", SourceText.From(writer.ToString(), Encoding.UTF8));
+        return ($"{symbol.ToDisplayString(Format.FileName)}.g.cs", SourceText.From(writer.ToString(), Encoding.UTF8));
     }
 }
